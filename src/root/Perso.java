@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -25,7 +26,8 @@ public class Perso extends HttpServlet {
 	 static PreparedStatement preparedStatement = null;
 
 	// Enregistrement du USER
-	private static final String SQL_RECORD_USER = "INSERT INTO message(message,email,timestamp)VALUES(?,?,?)";
+	private static final String SQL_RECORD_MESSAGE = "INSERT INTO message(message,email,timestamp)VALUES(?,?,?)";
+	private static final String SQL_READ_MESSAGE = "SELECT * FROM message WHERE email LIKE ?";
 	
 	@Override
 	public void init() throws ServletException {
@@ -44,12 +46,13 @@ public class Perso extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String decisionParam = request.getParameter("purpose");
+		String email = (String) request.getSession(false).getAttribute("email");
 		if(decisionParam.equals("ajoutmessage")){ 
 			String message = request.getParameter("message");
-			String email = (String) request.getSession(false).getAttribute("email");
+			
 			
 			try {
-				preparedStatement = connection.prepareStatement(SQL_RECORD_USER, Statement.RETURN_GENERATED_KEYS);
+				preparedStatement = connection.prepareStatement(SQL_RECORD_MESSAGE, Statement.RETURN_GENERATED_KEYS);
 				preparedStatement.setString(1, message);
 				preparedStatement.setString(2, email);
 				preparedStatement.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
@@ -64,6 +67,25 @@ public class Perso extends HttpServlet {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		 }else if(decisionParam.equals("liremessage")) {
+			 ArrayList<String> messages = new ArrayList<String>( );;
+			 try {
+				 preparedStatement = connection.prepareStatement(SQL_READ_MESSAGE, Statement.RETURN_GENERATED_KEYS);
+				 preparedStatement.setString(1, email);
+				 
+				 ResultSet rs = preparedStatement.executeQuery();
+				 while ( rs.next() ) {
+					 System.out.println(rs.getString("message"));
+					 messages.add(rs.getString("message"));
+				 }
+				 rs.close();
+				 preparedStatement.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			 if(messages.size() >0) {
+				 request.setAttribute("messages", messages);
+			 }
 		 }
 		doGet(request, response);
 	}
