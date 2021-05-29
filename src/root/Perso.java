@@ -59,6 +59,8 @@ public class Perso extends HttpServlet {
 				 while ( rs.next() ) {
 					 System.out.println(rs.getInt(1));
 				 }
+				 rs.close();
+				 preparedStatement.close();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
