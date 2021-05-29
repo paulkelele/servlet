@@ -1,6 +1,11 @@
 package root;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.sql.Timestamp;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -12,7 +17,16 @@ public class Perso extends HttpServlet {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	static Connection connection = SingletonConnexion.getConnexion();
+	
 
+//	Object de requete préparée
+	 static PreparedStatement preparedStatement = null;
+
+	// Enregistrement du USER
+	private static final String SQL_RECORD_USER = "INSERT INTO message(message,email,timestamp)VALUES(?,?,?)";
+	
 	@Override
 	public void init() throws ServletException {
 		  
@@ -28,9 +42,28 @@ public class Perso extends HttpServlet {
 	}
 
 	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		 
-		 
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String decisionParam = request.getParameter("purpose");
+		if(decisionParam.equals("ajoutmessage")){ 
+			String message = request.getParameter("message");
+			String email = (String) request.getSession(false).getAttribute("email");
+			
+			try {
+				preparedStatement = connection.prepareStatement(SQL_RECORD_USER, Statement.RETURN_GENERATED_KEYS);
+				preparedStatement.setString(1, message);
+				preparedStatement.setString(2, email);
+				preparedStatement.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+				preparedStatement.executeUpdate();
+
+				ResultSet rs = preparedStatement.getGeneratedKeys();
+				 while ( rs.next() ) {
+					 System.out.println(rs.getInt(1));
+				 }
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		 }
+		doGet(request, response);
 	}
 
 	@Override
