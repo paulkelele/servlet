@@ -54,7 +54,7 @@ public class Perso extends HttpServlet {
 				preparedStatement.setString(2, email);
 				preparedStatement.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
 				preparedStatement.executeUpdate();
-
+				System.err.println("d");
 				ResultSet rs = preparedStatement.getGeneratedKeys();
 				 while ( rs.next() ) {
 					 System.out.println(rs.getInt(1));
