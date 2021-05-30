@@ -76,9 +76,7 @@ public class Perso extends HttpServlet {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			 if(messages.size() >0) {
-				 request.setAttribute("messages", messages);
-			 }
+			 
 		 }else if(decisionParam.equals("liremessage")) {
 			 
 			 try {
@@ -99,7 +97,6 @@ public class Perso extends HttpServlet {
 				 String json = new Gson().toJson(messages);
 				 PrintWriter out = response.getWriter();
 				 response.setContentType("application/json; charset=UTF-8;");
-				  
 				 out.print(json);  
 			 }
 			 
