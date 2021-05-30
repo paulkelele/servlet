@@ -47,7 +47,7 @@ public class Perso extends HttpServlet {
 		request.setAttribute("civilite", civilite );
 		request.getRequestDispatcher("/perso.jsp").forward(request, response);
 		 
-	}
+	};
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -58,9 +58,7 @@ public class Perso extends HttpServlet {
 		if(decisionParam.equals("ajoutmessage")){ 
 			 
 			String message = request.getParameter("message");
-			
-			
-			try {
+			 try {
 				preparedStatement = connection.prepareStatement(SQL_RECORD_MESSAGE, Statement.RETURN_GENERATED_KEYS);
 				preparedStatement.setString(1, message);
 				preparedStatement.setString(2, email);
@@ -76,7 +74,11 @@ public class Perso extends HttpServlet {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			 
+			 String tot= "OK";
+			String json = new Gson().toJson(tot);
+			 PrintWriter out = response.getWriter();
+			 response.setContentType("application/json; charset=UTF-8;");
+			 out.print(json);
 		 }else if(decisionParam.equals("liremessage")) {
 			 
 			 try {
@@ -101,9 +103,7 @@ public class Perso extends HttpServlet {
 			 }
 			 
 		 }
-		  //doGet(request, response);
-		request.setAttribute("messages", messages);
-	}
+	 };
 
 	@Override
 	public void destroy() {
