@@ -74,7 +74,8 @@ public class Perso extends HttpServlet {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			 String tot= "OK";
+			
+			String tot= "OK";
 			String json = new Gson().toJson(tot);
 			 PrintWriter out = response.getWriter();
 			 response.setContentType("application/json; charset=UTF-8;");
