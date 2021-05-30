@@ -8,6 +8,8 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -33,6 +35,7 @@ public class Perso extends HttpServlet {
 	// Enregistrement du USER
 	private static final String SQL_RECORD_MESSAGE = "INSERT INTO message(message,email,timestamp)VALUES(?,?,?)";
 	private static final String SQL_READ_MESSAGE = "SELECT * FROM message WHERE email LIKE ?";
+	private static final String SQL_DEL_MESSAGE = "DELETE FROM message WHERE id=?";
 	
 	@Override
 	public void init() throws ServletException {
@@ -54,7 +57,7 @@ public class Perso extends HttpServlet {
 		String decisionParam = request.getParameter("purpose");
 		String email = (String) request.getSession(false).getAttribute("email");
 		ArrayList<String> messages = new ArrayList<String>( );
-	  
+		Map<Integer,String> tt = new HashMap<>();
 		if(decisionParam.equals("ajoutmessage")){ 
 			 
 			String message = request.getParameter("message");
@@ -88,20 +91,39 @@ public class Perso extends HttpServlet {
 				 
 				 ResultSet rs = preparedStatement.executeQuery();
 				 while ( rs.next() ) {
-					 
+					 int v =rs.getInt("id");
+					 messages.add(  String.valueOf(v));
 					 messages.add(rs.getString("message"));
+					 tt.put(rs.getInt("id"), rs.getString("message"));
 				 }
 				 rs.close();
 				 preparedStatement.close();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			 if(messages.size() >0) {
-				 String json = new Gson().toJson(messages);
+			 if(tt.size() >0) {
+				 String json = new Gson().toJson(tt);
 				 PrintWriter out = response.getWriter();
 				 response.setContentType("application/json; charset=UTF-8;");
 				 out.print(json);  
 			 }
+			 
+		 }else if (decisionParam.equals("delmessage")) {
+			 
+			 String message = request.getParameter("id");
+			 int id = Integer.parseInt(message);
+			 System.out.println(id);
+			  try {
+				  preparedStatement = connection.prepareStatement(SQL_DEL_MESSAGE, Statement.RETURN_GENERATED_KEYS);
+					 preparedStatement.setInt(1, id);
+					 int row = preparedStatement.executeUpdate();
+					  
+					 preparedStatement.close();
+				
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+			}
 			 
 		 }
 	 };
