@@ -1,6 +1,7 @@
 package root;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,6 +13,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.mysql.cj.xdevapi.JsonArray;
 
 public class Perso extends HttpServlet {
 	/**
@@ -41,13 +46,17 @@ public class Perso extends HttpServlet {
 		String civilite = (String) request.getSession(false).getAttribute("prenom")+" "+(String) request.getSession(false).getAttribute("nom");
 		request.setAttribute("civilite", civilite );
 		request.getRequestDispatcher("/perso.jsp").forward(request, response);
+		 
 	}
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String decisionParam = request.getParameter("purpose");
 		String email = (String) request.getSession(false).getAttribute("email");
+		ArrayList<String> messages = new ArrayList<String>( );
+	  
 		if(decisionParam.equals("ajoutmessage")){ 
+			 
 			String message = request.getParameter("message");
 			
 			
@@ -67,15 +76,18 @@ public class Perso extends HttpServlet {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			 if(messages.size() >0) {
+				 request.setAttribute("messages", messages);
+			 }
 		 }else if(decisionParam.equals("liremessage")) {
-			 ArrayList<String> messages = new ArrayList<String>( );;
+			 
 			 try {
 				 preparedStatement = connection.prepareStatement(SQL_READ_MESSAGE, Statement.RETURN_GENERATED_KEYS);
 				 preparedStatement.setString(1, email);
 				 
 				 ResultSet rs = preparedStatement.executeQuery();
 				 while ( rs.next() ) {
-					 System.out.println(rs.getString("message"));
+					 
 					 messages.add(rs.getString("message"));
 				 }
 				 rs.close();
@@ -84,10 +96,16 @@ public class Perso extends HttpServlet {
 				e.printStackTrace();
 			}
 			 if(messages.size() >0) {
-				 request.setAttribute("messages", messages);
+				 String json = new Gson().toJson(messages);
+				 PrintWriter out = response.getWriter();
+				 response.setContentType("application/json; charset=UTF-8;");
+				  
+				 out.print(json);  
 			 }
+			 
 		 }
-		doGet(request, response);
+		  //doGet(request, response);
+		request.setAttribute("messages", messages);
 	}
 
 	@Override
